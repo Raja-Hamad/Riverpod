@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_practice/future_provider/fruits_list.dart';
 import 'package:riverpod_practice/notifier_provider/cart_ui.dart';
 void main() {
 runApp(
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home:  ShoppingCartScreen(),
+      home:  HomePage(),
     );
   }
 }
