@@ -64,4 +64,44 @@ class ProductsNotifier extends AsyncNotifier<List<Product>> {
       );
     }
   }
+
+  // Notifier method to update a product
+  Future<void> updateProduct({
+  required int id,
+  required String title,
+  required double price,
+  required String description,
+  required String image,
+}) async {
+  final currentProducts = state.value ?? [];
+
+  try {
+    state = const AsyncLoading<List<Product>>();
+
+    final updatedProduct = await repository.updateProduct(
+      id: id,
+      title: title,
+      price: price,
+      description: description,
+      image: image,
+    );
+
+    final updatedProducts = currentProducts.map((product) {
+      if (product.id == id) {
+        return updatedProduct;
+      }
+
+      return product;
+    }).toList();
+
+    state = AsyncData(updatedProducts);
+  } catch (error, stackTrace) {
+    state = AsyncError<List<Product>>(
+      error,
+      stackTrace,
+    );
+
+    rethrow;
+  }
+}
 }

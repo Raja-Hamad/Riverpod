@@ -24,17 +24,11 @@ class ProductsPage extends ConsumerWidget {
           children: [
             Text(
               'Products',
-              style: TextStyle(
-                fontSize: 21,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
             ),
             Text(
               'Manage your products',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
         ),
@@ -45,9 +39,7 @@ class ProductsPage extends ConsumerWidget {
             onPressed: () {
               ref.invalidate(productsProvider);
             },
-            icon: const Icon(
-              Icons.refresh_rounded,
-            ),
+            icon: const Icon(Icons.refresh_rounded),
           ),
 
           const SizedBox(width: 8),
@@ -56,17 +48,10 @@ class ProductsPage extends ConsumerWidget {
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          _showAddProductSheet(
-            context: context,
-            ref: ref,
-          );
+          _showAddProductSheet(context: context, ref: ref);
         },
-        icon: const Icon(
-          Icons.add_rounded,
-        ),
-        label: const Text(
-          'Add Product',
-        ),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Add Product'),
       ),
 
       body: productsAsync.when(
@@ -87,10 +72,7 @@ class ProductsPage extends ConsumerWidget {
           if (products.isEmpty) {
             return _EmptyView(
               onAdd: () {
-                _showAddProductSheet(
-                  context: context,
-                  ref: ref,
-                );
+                _showAddProductSheet(context: context, ref: ref);
               },
             );
           }
@@ -99,51 +81,42 @@ class ProductsPage extends ConsumerWidget {
             onRefresh: () async {
               ref.invalidate(productsProvider);
 
-              await ref.read(
-                productsProvider.future,
-              );
+              await ref.read(productsProvider.future);
             },
 
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
 
-              padding: const EdgeInsets.fromLTRB(
-                16,
-                20,
-                16,
-                100,
-              ),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
 
               children: [
-                _SummaryCard(
-                  count: products.length,
-                ),
+                _SummaryCard(count: products.length),
 
                 const SizedBox(height: 24),
 
                 const Text(
                   'All Products',
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
                 ),
 
                 const SizedBox(height: 14),
 
-                ...products.map(
-                  (product) {
-                    return Padding(
-                      padding: const EdgeInsets.only(
-                        bottom: 12,
-                      ),
+                ...products.map((product) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
 
-                      child: _ProductCard(
-                        product: product,
-                      ),
-                    );
-                  },
-                ),
+                    child: _ProductCard(
+                      product: product,
+                      onEdit: () {
+                        _showEditProductSheet(
+                          context: context,
+                          ref: ref,
+                          product: product,
+                        );
+                      },
+                    ),
+                  );
+                }),
               ],
             ),
           );
@@ -189,19 +162,13 @@ class ProductsPage extends ConsumerWidget {
               return;
             }
 
-            final title =
-                titleController.text.trim();
+            final title = titleController.text.trim();
 
-            final price =
-                double.parse(
-              priceController.text.trim(),
-            );
+            final price = double.parse(priceController.text.trim());
 
-            final description =
-                descriptionController.text.trim();
+            final description = descriptionController.text.trim();
 
-            final image =
-                imageController.text.trim();
+            final image = imageController.text.trim();
 
             // --------------------------------------------------
             // Close bottom sheet
@@ -225,24 +192,14 @@ class ProductsPage extends ConsumerWidget {
 
               if (!context.mounted) return;
 
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Product added successfully',
-                  ),
-                ),
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Product added successfully')),
               );
             } catch (error) {
               if (!context.mounted) return;
 
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Failed to add product: $error',
-                  ),
-                ),
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Failed to add product: $error')),
               );
             }
           },
@@ -252,16 +209,102 @@ class ProductsPage extends ConsumerWidget {
   }
 }
 
+void _showEditProductSheet({
+  required BuildContext context,
+  required WidgetRef ref,
+  required Product product,
+}) {
+  final formKey = GlobalKey<FormState>();
+
+  final titleController = TextEditingController(text: product.title);
+
+  final priceController = TextEditingController(text: product.price.toString());
+
+  final descriptionController = TextEditingController(
+    text: product.description,
+  );
+
+  final imageController = TextEditingController(text: product.image);
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+
+    builder: (sheetContext) {
+      return _EditProductSheet(
+        formKey: formKey,
+
+        titleController: titleController,
+        priceController: priceController,
+        descriptionController: descriptionController,
+        imageController: imageController,
+
+        onSubmit: () async {
+          // --------------------------------------------------
+          // Validate form
+          // --------------------------------------------------
+
+          if (!formKey.currentState!.validate()) {
+            return;
+          }
+
+          final title = titleController.text.trim();
+
+          final price = double.parse(priceController.text.trim());
+
+          final description = descriptionController.text.trim();
+
+          final image = imageController.text.trim();
+
+          // --------------------------------------------------
+          // Close bottom sheet
+          // --------------------------------------------------
+
+          Navigator.pop(sheetContext);
+
+          // --------------------------------------------------
+          // Call UPDATE method
+          // --------------------------------------------------
+
+          try {
+            await ref
+                .read(productsProvider.notifier)
+                .updateProduct(
+                  id: product.id,
+                  title: title,
+                  price: price,
+                  description: description,
+                  image: image,
+                );
+
+            if (!context.mounted) return;
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Product updated successfully')),
+            );
+          } catch (error) {
+            if (!context.mounted) return;
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Failed to update product: $error')),
+            );
+          }
+        },
+      );
+    },
+  );
+}
+
 // ============================================================
 // PRODUCT CARD
 // ============================================================
 
 class _ProductCard extends StatelessWidget {
   final Product product;
+  final VoidCallback onEdit;
 
-  const _ProductCard({
-    required this.product,
-  });
+  const _ProductCard({required this.product, required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -282,17 +325,14 @@ class _ProductCard extends StatelessWidget {
       ),
 
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
           // --------------------------------------------------
           // IMAGE
           // --------------------------------------------------
-
           ClipRRect(
-            borderRadius:
-                BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16),
 
             child: Container(
               width: 85,
@@ -302,11 +342,9 @@ class _ProductCard extends StatelessWidget {
 
               child: Image.network(
                 product.image,
-
                 fit: BoxFit.contain,
 
-                errorBuilder:
-                    (context, error, stackTrace) {
+                errorBuilder: (context, error, stackTrace) {
                   return const Icon(
                     Icons.image_not_supported_outlined,
                     color: Colors.grey,
@@ -321,11 +359,9 @@ class _ProductCard extends StatelessWidget {
           // --------------------------------------------------
           // DETAILS
           // --------------------------------------------------
-
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
                 Text(
@@ -333,8 +369,7 @@ class _ProductCard extends StatelessWidget {
 
                   maxLines: 2,
 
-                  overflow:
-                      TextOverflow.ellipsis,
+                  overflow: TextOverflow.ellipsis,
 
                   style: const TextStyle(
                     fontSize: 16,
@@ -349,8 +384,7 @@ class _ProductCard extends StatelessWidget {
 
                   maxLines: 2,
 
-                  overflow:
-                      TextOverflow.ellipsis,
+                  overflow: TextOverflow.ellipsis,
 
                   style: const TextStyle(
                     fontSize: 12,
@@ -361,13 +395,30 @@ class _ProductCard extends StatelessWidget {
 
                 const SizedBox(height: 10),
 
-                Text(
-                  '\$${product.price.toStringAsFixed(2)}',
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '\$${product.price.toStringAsFixed(2)}',
 
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                  ),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+
+                    // ------------------------------------------------
+                    // EDIT BUTTON
+                    // ------------------------------------------------
+                    IconButton(
+                      tooltip: 'Edit Product',
+
+                      onPressed: onEdit,
+
+                      icon: const Icon(Icons.edit_outlined, size: 20),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -385,9 +436,7 @@ class _ProductCard extends StatelessWidget {
 class _SummaryCard extends StatelessWidget {
   final int count;
 
-  const _SummaryCard({
-    required this.count,
-  });
+  const _SummaryCard({required this.count});
 
   @override
   Widget build(BuildContext context) {
@@ -398,10 +447,7 @@ class _SummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
 
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF5B5FEF),
-            Color(0xFF7B61FF),
-          ],
+          colors: [Color(0xFF5B5FEF), Color(0xFF7B61FF)],
         ),
       ),
 
@@ -413,8 +459,7 @@ class _SummaryCard extends StatelessWidget {
 
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.18),
-              borderRadius:
-                  BorderRadius.circular(17),
+              borderRadius: BorderRadius.circular(17),
             ),
 
             child: const Icon(
@@ -428,16 +473,12 @@ class _SummaryCard extends StatelessWidget {
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
                 const Text(
                   'Product Collection',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 14),
                 ),
 
                 const SizedBox(height: 4),
@@ -484,23 +525,15 @@ class _AddProductSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset =
-        MediaQuery.of(context).viewInsets.bottom;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        20,
-        20,
-        bottomInset + 20,
-      ),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, bottomInset + 20),
 
       decoration: const BoxDecoration(
         color: Colors.white,
 
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(28),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
 
       child: SingleChildScrollView(
@@ -508,14 +541,12 @@ class _AddProductSheet extends StatelessWidget {
           key: formKey,
 
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
               // ------------------------------------------------
               // HANDLE
               // ------------------------------------------------
-
               Center(
                 child: Container(
                   width: 42,
@@ -523,8 +554,7 @@ class _AddProductSheet extends StatelessWidget {
 
                   decoration: BoxDecoration(
                     color: Colors.grey.shade300,
-                    borderRadius:
-                        BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
               ),
@@ -533,20 +563,14 @@ class _AddProductSheet extends StatelessWidget {
 
               const Text(
                 'Add New Product',
-                style: TextStyle(
-                  fontSize: 23,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
               ),
 
               const SizedBox(height: 6),
 
               const Text(
                 'Enter the product details below',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 13, color: Colors.grey),
               ),
 
               const SizedBox(height: 24),
@@ -554,23 +578,19 @@ class _AddProductSheet extends StatelessWidget {
               // ------------------------------------------------
               // TITLE
               // ------------------------------------------------
-
               TextFormField(
                 controller: titleController,
 
-                textInputAction:
-                    TextInputAction.next,
+                textInputAction: TextInputAction.next,
 
-                decoration:
-                    _inputDecoration(
+                decoration: _inputDecoration(
                   label: 'Product Title',
                   hint: 'e.g. Wireless Headphones',
                   icon: Icons.inventory_2_outlined,
                 ),
 
                 validator: (value) {
-                  if (value == null ||
-                      value.trim().isEmpty) {
+                  if (value == null || value.trim().isEmpty) {
                     return 'Please enter product title';
                   }
 
@@ -583,35 +603,27 @@ class _AddProductSheet extends StatelessWidget {
               // ------------------------------------------------
               // PRICE
               // ------------------------------------------------
-
               TextFormField(
                 controller: priceController,
 
-                keyboardType:
-                    const TextInputType.numberWithOptions(
+                keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
 
-                textInputAction:
-                    TextInputAction.next,
+                textInputAction: TextInputAction.next,
 
-                decoration:
-                    _inputDecoration(
+                decoration: _inputDecoration(
                   label: 'Price',
                   hint: 'e.g. 99.99',
                   icon: Icons.attach_money_rounded,
                 ),
 
                 validator: (value) {
-                  if (value == null ||
-                      value.trim().isEmpty) {
+                  if (value == null || value.trim().isEmpty) {
                     return 'Please enter price';
                   }
 
-                  final price =
-                      double.tryParse(
-                    value.trim(),
-                  );
+                  final price = double.tryParse(value.trim());
 
                   if (price == null) {
                     return 'Please enter a valid price';
@@ -630,26 +642,21 @@ class _AddProductSheet extends StatelessWidget {
               // ------------------------------------------------
               // DESCRIPTION
               // ------------------------------------------------
-
               TextFormField(
-                controller:
-                    descriptionController,
+                controller: descriptionController,
 
                 maxLines: 3,
 
-                textInputAction:
-                    TextInputAction.newline,
+                textInputAction: TextInputAction.newline,
 
-                decoration:
-                    _inputDecoration(
+                decoration: _inputDecoration(
                   label: 'Description',
                   hint: 'Enter product description',
                   icon: Icons.description_outlined,
                 ),
 
                 validator: (value) {
-                  if (value == null ||
-                      value.trim().isEmpty) {
+                  if (value == null || value.trim().isEmpty) {
                     return 'Please enter description';
                   }
 
@@ -662,35 +669,27 @@ class _AddProductSheet extends StatelessWidget {
               // ------------------------------------------------
               // IMAGE URL
               // ------------------------------------------------
-
               TextFormField(
                 controller: imageController,
 
-                keyboardType:
-                    TextInputType.url,
+                keyboardType: TextInputType.url,
 
-                textInputAction:
-                    TextInputAction.done,
+                textInputAction: TextInputAction.done,
 
-                decoration:
-                    _inputDecoration(
+                decoration: _inputDecoration(
                   label: 'Image URL',
                   hint: 'https://example.com/image.jpg',
                   icon: Icons.image_outlined,
                 ),
 
                 validator: (value) {
-                  if (value == null ||
-                      value.trim().isEmpty) {
+                  if (value == null || value.trim().isEmpty) {
                     return 'Please enter image URL';
                   }
 
-                  final uri = Uri.tryParse(
-                    value.trim(),
-                  );
+                  final uri = Uri.tryParse(value.trim());
 
-                  if (uri == null ||
-                      !uri.hasScheme) {
+                  if (uri == null || !uri.hasScheme) {
                     return 'Please enter a valid URL';
                   }
 
@@ -703,7 +702,6 @@ class _AddProductSheet extends StatelessWidget {
               // ------------------------------------------------
               // SUBMIT
               // ------------------------------------------------
-
               SizedBox(
                 width: double.infinity,
                 height: 54,
@@ -711,16 +709,11 @@ class _AddProductSheet extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: onSubmit,
 
-                  icon: const Icon(
-                    Icons.add_rounded,
-                  ),
+                  icon: const Icon(Icons.add_rounded),
 
                   label: const Text(
                     'Create Product',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -747,33 +740,285 @@ class _AddProductSheet extends StatelessWidget {
       fillColor: const Color(0xFFF8F9FB),
 
       border: OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(15),
 
         borderSide: BorderSide.none,
       ),
 
-      enabledBorder:
-          OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(15),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
 
         borderSide: BorderSide.none,
       ),
 
-      focusedBorder:
-          OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(15),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
 
-        borderSide: const BorderSide(
-          color: Color(0xFF5B5FEF),
-          width: 1.5,
-        ),
+        borderSide: const BorderSide(color: Color(0xFF5B5FEF), width: 1.5),
       ),
     );
   }
 }
+
+// ============================================================
+// EDIT PRODUCT SHEET
+// ============================================================
+
+class _EditProductSheet extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+
+  final TextEditingController titleController;
+  final TextEditingController priceController;
+  final TextEditingController descriptionController;
+  final TextEditingController imageController;
+
+  final VoidCallback onSubmit;
+
+  const _EditProductSheet({
+    required this.formKey,
+    required this.titleController,
+    required this.priceController,
+    required this.descriptionController,
+    required this.imageController,
+    required this.onSubmit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 20, 20, bottomInset + 20),
+
+      decoration: const BoxDecoration(
+        color: Colors.white,
+
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+
+      child: SingleChildScrollView(
+        child: Form(
+          key: formKey,
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+
+            children: [
+              // ------------------------------------------------
+              // HANDLE
+              // ------------------------------------------------
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
+              const Text(
+                'Edit Product',
+                style: TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
+              ),
+
+              const SizedBox(height: 6),
+
+              Text(
+                'Update product #${titleController.text.isEmpty ? '' : ''}',
+                style: const TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+
+              const SizedBox(height: 24),
+
+              // ------------------------------------------------
+              // TITLE
+              // ------------------------------------------------
+              TextFormField(
+                controller: titleController,
+
+                textInputAction: TextInputAction.next,
+
+                decoration: _inputDecoration(
+                  label: 'Product Title',
+                  hint: 'e.g. Wireless Headphones',
+                  icon: Icons.inventory_2_outlined,
+                ),
+
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter product title';
+                  }
+
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 14),
+
+              // ------------------------------------------------
+              // PRICE
+              // ------------------------------------------------
+              TextFormField(
+                controller: priceController,
+
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+
+                textInputAction: TextInputAction.next,
+
+                decoration: _inputDecoration(
+                  label: 'Price',
+                  hint: 'e.g. 99.99',
+                  icon: Icons.attach_money_rounded,
+                ),
+
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter price';
+                  }
+
+                  final price = double.tryParse(value.trim());
+
+                  if (price == null) {
+                    return 'Please enter a valid price';
+                  }
+
+                  if (price <= 0) {
+                    return 'Price must be greater than 0';
+                  }
+
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 14),
+
+              // ------------------------------------------------
+              // DESCRIPTION
+              // ------------------------------------------------
+              TextFormField(
+                controller: descriptionController,
+
+                maxLines: 3,
+
+                textInputAction: TextInputAction.newline,
+
+                decoration: _inputDecoration(
+                  label: 'Description',
+                  hint: 'Enter product description',
+                  icon: Icons.description_outlined,
+                ),
+
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter description';
+                  }
+
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 14),
+
+              // ------------------------------------------------
+              // IMAGE URL
+              // ------------------------------------------------
+              TextFormField(
+                controller: imageController,
+
+                keyboardType: TextInputType.url,
+
+                textInputAction: TextInputAction.done,
+
+                decoration: _inputDecoration(
+                  label: 'Image URL',
+                  hint: 'https://example.com/image.jpg',
+                  icon: Icons.image_outlined,
+                ),
+
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter image URL';
+                  }
+
+                  final uri = Uri.tryParse(value.trim());
+
+                  if (uri == null || !uri.hasScheme) {
+                    return 'Please enter a valid URL';
+                  }
+
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              // ------------------------------------------------
+              // UPDATE BUTTON
+              // ------------------------------------------------
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+
+                child: FilledButton.icon(
+                  onPressed: onSubmit,
+
+                  icon: const Icon(Icons.check_rounded),
+
+                  label: const Text(
+                    'Update Product',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required String label,
+    required String hint,
+    required IconData icon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+
+      prefixIcon: Icon(icon),
+
+      filled: true,
+
+      fillColor: const Color(0xFFF8F9FB),
+
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: BorderSide.none,
+      ),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: BorderSide.none,
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: const BorderSide(color: Color(0xFF5B5FEF), width: 1.5),
+      ),
+    );
+  }
+}
+// ============================================================
+// EDIT PRODUCT SHEET
+// ============================================================
 
 // ============================================================
 // LOADING VIEW
@@ -795,32 +1040,24 @@ class _LoadingView extends StatelessWidget {
 
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius:
-                BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
 
         const SizedBox(height: 20),
 
-        ...List.generate(
-          5,
-          (index) {
-            return Container(
-              height: 115,
+        ...List.generate(5, (index) {
+          return Container(
+            height: 115,
 
-              margin:
-                  const EdgeInsets.only(
-                bottom: 12,
-              ),
+            margin: const EdgeInsets.only(bottom: 12),
 
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.circular(20),
-              ),
-            );
-          },
-        ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          );
+        }),
       ],
     );
   }
@@ -833,9 +1070,7 @@ class _LoadingView extends StatelessWidget {
 class _EmptyView extends StatelessWidget {
   final VoidCallback onAdd;
 
-  const _EmptyView({
-    required this.onAdd,
-  });
+  const _EmptyView({required this.onAdd});
 
   @override
   Widget build(BuildContext context) {
@@ -844,8 +1079,7 @@ class _EmptyView extends StatelessWidget {
         padding: const EdgeInsets.all(30),
 
         child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
             Container(
@@ -868,10 +1102,7 @@ class _EmptyView extends StatelessWidget {
 
             const Text(
               'No Products Yet',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
             ),
 
             const SizedBox(height: 8),
@@ -881,10 +1112,7 @@ class _EmptyView extends StatelessWidget {
               'Add your first product to get started.',
               textAlign: TextAlign.center,
 
-              style: TextStyle(
-                color: Colors.grey,
-                height: 1.5,
-              ),
+              style: TextStyle(color: Colors.grey, height: 1.5),
             ),
 
             const SizedBox(height: 24),
@@ -892,13 +1120,9 @@ class _EmptyView extends StatelessWidget {
             FilledButton.icon(
               onPressed: onAdd,
 
-              icon: const Icon(
-                Icons.add_rounded,
-              ),
+              icon: const Icon(Icons.add_rounded),
 
-              label: const Text(
-                'Add First Product',
-              ),
+              label: const Text('Add First Product'),
             ),
           ],
         ),
@@ -915,10 +1139,7 @@ class _ErrorView extends StatelessWidget {
   final Object error;
   final VoidCallback onRetry;
 
-  const _ErrorView({
-    required this.error,
-    required this.onRetry,
-  });
+  const _ErrorView({required this.error, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -927,8 +1148,7 @@ class _ErrorView extends StatelessWidget {
         padding: const EdgeInsets.all(30),
 
         child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
             Container(
@@ -951,10 +1171,7 @@ class _ErrorView extends StatelessWidget {
 
             const Text(
               'Something went wrong',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
             ),
 
             const SizedBox(height: 8),
@@ -963,9 +1180,7 @@ class _ErrorView extends StatelessWidget {
               error.toString(),
               textAlign: TextAlign.center,
 
-              style: const TextStyle(
-                color: Colors.grey,
-              ),
+              style: const TextStyle(color: Colors.grey),
             ),
 
             const SizedBox(height: 22),
@@ -973,13 +1188,9 @@ class _ErrorView extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
 
-              icon: const Icon(
-                Icons.refresh_rounded,
-              ),
+              icon: const Icon(Icons.refresh_rounded),
 
-              label: const Text(
-                'Try Again',
-              ),
+              label: const Text('Try Again'),
             ),
           ],
         ),
@@ -987,4 +1198,3 @@ class _ErrorView extends StatelessWidget {
     );
   }
 }
-

@@ -31,4 +31,21 @@ class ProductRepository {
 
     return Product.fromJson(data);
   }
+  Future<Product> updateProduct({
+  required int id,
+  required String title,
+  required double price,
+  required String description,
+  required String image,
+}) async {
+  final data = await productApiService.updateProduct(
+    id: id,
+    title: title,
+    price: price,
+    description: description,
+    image: image,
+  );
+
+  return Product.fromJson(data);
+}
 }
