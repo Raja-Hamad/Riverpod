@@ -52,4 +52,11 @@ class ProductApiService {
 
   return response.data;
 }
+Future<void> deleteProduct({
+  required int id,
+}) async {
+  await dio.delete(
+    'https://fakestoreapi.com/products/$id',
+  );
+}
 }

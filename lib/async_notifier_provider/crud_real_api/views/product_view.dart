@@ -114,6 +114,13 @@ class ProductsPage extends ConsumerWidget {
                           product: product,
                         );
                       },
+                      onDelete: () {
+                        _deleteProduct(
+                          context: context,
+                          ref: ref,
+                          product: product,
+                        );
+                      },
                     ),
                   );
                 }),
@@ -303,8 +310,13 @@ void _showEditProductSheet({
 class _ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
-  const _ProductCard({required this.product, required this.onEdit});
+  const _ProductCard({
+    required this.product,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -418,6 +430,11 @@ class _ProductCard extends StatelessWidget {
 
                       icon: const Icon(Icons.edit_outlined, size: 20),
                     ),
+                    IconButton(
+                      tooltip: 'Delete Product',
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                    ),
                   ],
                 ),
               ],
@@ -426,6 +443,54 @@ class _ProductCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+Future<void> _deleteProduct({
+  required BuildContext context,
+  required WidgetRef ref,
+  required Product product,
+}) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: const Text('Delete Product'),
+        content: Text('Are you sure you want to delete "${product.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, false);
+            },
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, true);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirmed != true) return;
+
+  try {
+    await ref.read(productsProvider.notifier).deleteProduct(id: product.id);
+
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Product deleted successfully')),
+    );
+  } catch (error) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Failed to delete product: $error')));
   }
 }
 

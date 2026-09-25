@@ -21,8 +21,7 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
   return ProductRepository(apiService);
 });
 
-final productsProvider =
-    AsyncNotifierProvider<ProductsNotifier, List<Product>>(
+final productsProvider = AsyncNotifierProvider<ProductsNotifier, List<Product>>(
   ProductsNotifier.new,
 );
 
@@ -35,7 +34,8 @@ class ProductsNotifier extends AsyncNotifier<List<Product>> {
 
     return repository.getProducts();
   }
-   Future<void> addProduct({
+
+  Future<void> addProduct({
     required String title,
     required double price,
     required String description,
@@ -53,55 +53,67 @@ class ProductsNotifier extends AsyncNotifier<List<Product>> {
         image: image,
       );
 
-      state = AsyncData([
-        ...currentProducts,
-        newProduct,
-      ]);
+      state = AsyncData([...currentProducts, newProduct]);
     } catch (error, stackTrace) {
-      state = AsyncError<List<Product>>(
-        error,
-        stackTrace,
-      );
+      state = AsyncError<List<Product>>(error, stackTrace);
     }
   }
 
   // Notifier method to update a product
   Future<void> updateProduct({
-  required int id,
-  required String title,
-  required double price,
-  required String description,
-  required String image,
-}) async {
-  final currentProducts = state.value ?? [];
+    required int id,
+    required String title,
+    required double price,
+    required String description,
+    required String image,
+  }) async {
+    final currentProducts = state.value ?? [];
 
-  try {
-    state = const AsyncLoading<List<Product>>();
+    try {
+      state = const AsyncLoading<List<Product>>();
 
-    final updatedProduct = await repository.updateProduct(
-      id: id,
-      title: title,
-      price: price,
-      description: description,
-      image: image,
-    );
+      final updatedProduct = await repository.updateProduct(
+        id: id,
+        title: title,
+        price: price,
+        description: description,
+        image: image,
+      );
 
-    final updatedProducts = currentProducts.map((product) {
-      if (product.id == id) {
-        return updatedProduct;
-      }
+      final updatedProducts = currentProducts.map((product) {
+        if (product.id == id) {
+          return updatedProduct;
+        }
 
-      return product;
-    }).toList();
+        return product;
+      }).toList();
 
-    state = AsyncData(updatedProducts);
-  } catch (error, stackTrace) {
-    state = AsyncError<List<Product>>(
-      error,
-      stackTrace,
-    );
+      state = AsyncData(updatedProducts);
+    } catch (error, stackTrace) {
+      state = AsyncError<List<Product>>(error, stackTrace);
 
-    rethrow;
+      rethrow;
+    }
   }
-}
+  // Notifier method to delete a product
+
+  Future<void> deleteProduct({required int id}) async {
+    final currentProducts = state.value ?? [];
+
+    try {
+      state = const AsyncLoading<List<Product>>();
+
+      await repository.deleteProduct(id: id);
+
+      final updatedProducts = currentProducts
+          .where((product) => product.id != id)
+          .toList();
+
+      state = AsyncData(updatedProducts);
+    } catch (error, stackTrace) {
+      state = AsyncError<List<Product>>(error, stackTrace);
+
+      rethrow;
+    }
+  }
 }

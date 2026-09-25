@@ -10,13 +10,10 @@ class ProductRepository {
   Future<List<Product>> getProducts() async {
     final data = await productApiService.getProducts();
 
-    return data
-        .map(
-          (json) => Product.fromJson(json),
-        )
-        .toList();
+    return data.map((json) => Product.fromJson(json)).toList();
   }
-    Future<Product> createProduct({
+
+  Future<Product> createProduct({
     required String title,
     required double price,
     required String description,
@@ -31,21 +28,26 @@ class ProductRepository {
 
     return Product.fromJson(data);
   }
-  Future<Product> updateProduct({
-  required int id,
-  required String title,
-  required double price,
-  required String description,
-  required String image,
-}) async {
-  final data = await productApiService.updateProduct(
-    id: id,
-    title: title,
-    price: price,
-    description: description,
-    image: image,
-  );
 
-  return Product.fromJson(data);
-}
+  Future<Product> updateProduct({
+    required int id,
+    required String title,
+    required double price,
+    required String description,
+    required String image,
+  }) async {
+    final data = await productApiService.updateProduct(
+      id: id,
+      title: title,
+      price: price,
+      description: description,
+      image: image,
+    );
+
+    return Product.fromJson(data);
+  }
+
+  Future<void> deleteProduct({required int id}) async {
+    await productApiService.deleteProduct(id: id);
+  }
 }
