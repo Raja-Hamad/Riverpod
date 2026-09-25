@@ -16,4 +16,19 @@ class ProductRepository {
         )
         .toList();
   }
+    Future<Product> createProduct({
+    required String title,
+    required double price,
+    required String description,
+    required String image,
+  }) async {
+    final data = await productApiService.createProduct(
+      title: title,
+      price: price,
+      description: description,
+      image: image,
+    );
+
+    return Product.fromJson(data);
+  }
 }

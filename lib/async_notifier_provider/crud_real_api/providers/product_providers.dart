@@ -35,4 +35,33 @@ class ProductsNotifier extends AsyncNotifier<List<Product>> {
 
     return repository.getProducts();
   }
+   Future<void> addProduct({
+    required String title,
+    required double price,
+    required String description,
+    required String image,
+  }) async {
+    final currentProducts = state.value ?? [];
+
+    try {
+      state = const AsyncLoading<List<Product>>();
+
+      final newProduct = await repository.createProduct(
+        title: title,
+        price: price,
+        description: description,
+        image: image,
+      );
+
+      state = AsyncData([
+        ...currentProducts,
+        newProduct,
+      ]);
+    } catch (error, stackTrace) {
+      state = AsyncError<List<Product>>(
+        error,
+        stackTrace,
+      );
+    }
+  }
 }

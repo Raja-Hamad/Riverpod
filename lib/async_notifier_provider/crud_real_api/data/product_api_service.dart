@@ -13,4 +13,23 @@ class ProductApiService {
 
     return response.data;
   }
+    Future<Map<String, dynamic>> createProduct({
+    required String title,
+    required double price,
+    required String description,
+    required String image,
+  }) async {
+    final response = await dio.post(
+      'https://fakestoreapi.com/products',
+      data: {
+        'title': title,
+        'price': price,
+        'description': description,
+        'image': image,
+        'category': 'general',
+      },
+    );
+
+    return response.data;
+  }
 }
