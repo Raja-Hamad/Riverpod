@@ -12,6 +12,11 @@ class ProductsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(productsProvider, (previous, next) {
       next.whenOrNull(
+        data: (products) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Loaded ${products.length} products')),
+          );
+        },
         error: (error, stackTrace) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error loading products: $error')),
