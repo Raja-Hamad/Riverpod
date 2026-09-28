@@ -18,6 +18,17 @@ class ProductsPage extends ConsumerWidget {
       if (kDebugMode) {
         print('NEXT: $next');
       }
+      if (previous is AsyncLoading && next is AsyncData) {
+        if (kDebugMode) {
+          print('✅ Products loaded successfully');
+        }
+      }
+
+      if (previous is AsyncLoading && next is AsyncError) {
+        if (kDebugMode) {
+          print('❌ Products failed to load');
+        }
+      }
       next.whenOrNull(
         data: (products) {
           ScaffoldMessenger.of(context).showSnackBar(
