@@ -29,7 +29,7 @@ final productsProvider = AsyncNotifierProvider<ProductsNotifier, List<Product>>(
 
 // provider for a single product by ID
 final productProvider =
-    AsyncNotifierProvider.family<ProductNotifier, Product, int>(
+    AsyncNotifierProvider.autoDispose.family<ProductNotifier, Product, int>(
       ProductNotifier.new,
     );
 

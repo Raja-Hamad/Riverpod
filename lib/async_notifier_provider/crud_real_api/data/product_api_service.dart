@@ -63,7 +63,7 @@ Future<Map<String, dynamic>> getProductById(
   int id,
 ) async {
   final response = await dio.get(
-    '/products/$id',
+    'https://fakestoreapi.com/products/$id',
   );
 
   return response.data as Map<String, dynamic>;
