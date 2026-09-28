@@ -50,4 +50,13 @@ class ProductRepository {
   Future<void> deleteProduct({required int id}) async {
     await productApiService.deleteProduct(id: id);
   }
+  Future<Product> getProductById(
+  int id,
+) async {
+  final data = await productApiService.getProductById(
+    id,
+  );
+
+  return Product.fromJson(data);
+}
 }

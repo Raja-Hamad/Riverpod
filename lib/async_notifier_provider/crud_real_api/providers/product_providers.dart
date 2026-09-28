@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_practice/async_notifier_provider/crud_real_api/data/product_api_service.dart';
@@ -24,6 +26,27 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
 final productsProvider = AsyncNotifierProvider<ProductsNotifier, List<Product>>(
   ProductsNotifier.new,
 );
+
+// provider for a single product by ID
+final productProvider =
+    AsyncNotifierProvider.family<ProductNotifier, Product, int>(
+      ProductNotifier.new,
+    );
+
+class ProductNotifier extends AsyncNotifier<Product> {
+  ProductNotifier(this.productId);
+
+  final int productId;
+
+  @override
+  Future<Product> build() async {
+    final product = await ref
+        .read(productRepositoryProvider)
+        .getProductById(productId);
+
+    return product;
+  }
+}
 
 class ProductsNotifier extends AsyncNotifier<List<Product>> {
   late final ProductRepository repository;

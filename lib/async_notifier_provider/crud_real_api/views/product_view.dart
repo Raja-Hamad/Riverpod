@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_practice/async_notifier_provider/crud_real_api/providers/product_providers.dart';
+import 'package:riverpod_practice/async_notifier_provider/crud_real_api/views/product_details_page.dart';
 
 import '../models/product.dart';
 
@@ -320,127 +321,140 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailsPage(productId: product.id),
           ),
-        ],
-      ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
 
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
 
-        children: [
-          // --------------------------------------------------
-          // IMAGE
-          // --------------------------------------------------
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
 
-            child: Container(
-              width: 85,
-              height: 85,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
 
-              color: const Color(0xFFF5F5F5),
+          children: [
+            // --------------------------------------------------
+            // IMAGE
+            // --------------------------------------------------
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
 
-              child: Image.network(
-                product.image,
-                fit: BoxFit.contain,
+              child: Container(
+                width: 85,
+                height: 85,
 
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
-                    Icons.image_not_supported_outlined,
-                    color: Colors.grey,
-                  );
-                },
+                color: const Color(0xFFF5F5F5),
+
+                child: Image.network(
+                  product.image,
+                  fit: BoxFit.contain,
+
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(
+                      Icons.image_not_supported_outlined,
+                      color: Colors.grey,
+                    );
+                  },
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(width: 14),
+            const SizedBox(width: 14),
 
-          // --------------------------------------------------
-          // DETAILS
-          // --------------------------------------------------
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            // --------------------------------------------------
+            // DETAILS
+            // --------------------------------------------------
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
 
-              children: [
-                Text(
-                  product.title,
+                children: [
+                  Text(
+                    product.title,
 
-                  maxLines: 2,
+                    maxLines: 2,
 
-                  overflow: TextOverflow.ellipsis,
+                    overflow: TextOverflow.ellipsis,
 
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
-                Text(
-                  product.description,
+                  Text(
+                    product.description,
 
-                  maxLines: 2,
+                    maxLines: 2,
 
-                  overflow: TextOverflow.ellipsis,
+                    overflow: TextOverflow.ellipsis,
 
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    height: 1.4,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      height: 1.4,
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 10),
+                  const SizedBox(height: 10),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '\$${product.price.toStringAsFixed(2)}',
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '\$${product.price.toStringAsFixed(2)}',
 
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
-                    ),
 
-                    // ------------------------------------------------
-                    // EDIT BUTTON
-                    // ------------------------------------------------
-                    IconButton(
-                      tooltip: 'Edit Product',
+                      // ------------------------------------------------
+                      // EDIT BUTTON
+                      // ------------------------------------------------
+                      IconButton(
+                        tooltip: 'Edit Product',
 
-                      onPressed: onEdit,
+                        onPressed: onEdit,
 
-                      icon: const Icon(Icons.edit_outlined, size: 20),
-                    ),
-                    IconButton(
-                      tooltip: 'Delete Product',
-                      onPressed: onDelete,
-                      icon: const Icon(Icons.delete_outline_rounded, size: 20),
-                    ),
-                  ],
-                ),
-              ],
+                        icon: const Icon(Icons.edit_outlined, size: 20),
+                      ),
+                      IconButton(
+                        tooltip: 'Delete Product',
+                        onPressed: onDelete,
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
