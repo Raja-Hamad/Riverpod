@@ -10,6 +10,15 @@ class ProductsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(productsProvider, (previous, next) {
+      next.whenOrNull(
+        error: (error, stackTrace) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error loading products: $error')),
+          );
+        },
+      );
+    });
     final productsAsync = ref.watch(productsProvider);
 
     return Scaffold(
