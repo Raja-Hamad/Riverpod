@@ -6,13 +6,18 @@ class ProductApiService {
 
   ProductApiService(this.dio);
 
-  Future<List<dynamic>> getProducts() async {
-    final response = await dio.get(
-      'https://fakestoreapi.com/products',
-    );
+Future<List<dynamic>> getProducts() async {
+  print('🚀 GET products started');
 
-    return response.data;
-  }
+  final response = await dio.get(
+    'https://fakestoreapi.com/products',
+  );
+
+  print('✅ GET products completed');
+  print('Response: ${response.data}');
+
+  return response.data;
+}
     Future<Map<String, dynamic>> createProduct({
     required String title,
     required double price,

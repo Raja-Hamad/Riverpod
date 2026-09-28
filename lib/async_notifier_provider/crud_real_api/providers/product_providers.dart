@@ -8,7 +8,13 @@ import '../data/product_repository.dart';
 import '../models/product.dart';
 
 final dioProvider = Provider<Dio>((ref) {
-  return Dio();
+  return Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+      sendTimeout: const Duration(seconds: 10),
+    ),
+  );
 });
 
 final apiServiceProvider = Provider<ProductApiService>((ref) {
@@ -49,11 +55,9 @@ class ProductNotifier extends AsyncNotifier<Product> {
 }
 
 class ProductsNotifier extends AsyncNotifier<List<Product>> {
-  late final ProductRepository repository;
-
   @override
   Future<List<Product>> build() async {
-    repository = ref.read(productRepositoryProvider);
+    final repository = ref.read(productRepositoryProvider);
 
     return repository.getProducts();
   }
@@ -69,6 +73,8 @@ class ProductsNotifier extends AsyncNotifier<List<Product>> {
     try {
       state = const AsyncLoading<List<Product>>();
 
+      final repository = ref.read(productRepositoryProvider);
+
       final newProduct = await repository.createProduct(
         title: title,
         price: price,
@@ -82,7 +88,6 @@ class ProductsNotifier extends AsyncNotifier<List<Product>> {
     }
   }
 
-  // Notifier method to update a product
   Future<void> updateProduct({
     required int id,
     required String title,
@@ -94,6 +99,8 @@ class ProductsNotifier extends AsyncNotifier<List<Product>> {
 
     try {
       state = const AsyncLoading<List<Product>>();
+
+      final repository = ref.read(productRepositoryProvider);
 
       final updatedProduct = await repository.updateProduct(
         id: id,
@@ -114,17 +121,17 @@ class ProductsNotifier extends AsyncNotifier<List<Product>> {
       state = AsyncData(updatedProducts);
     } catch (error, stackTrace) {
       state = AsyncError<List<Product>>(error, stackTrace);
-
       rethrow;
     }
   }
-  // Notifier method to delete a product
 
   Future<void> deleteProduct({required int id}) async {
     final currentProducts = state.value ?? [];
 
     try {
       state = const AsyncLoading<List<Product>>();
+
+      final repository = ref.read(productRepositoryProvider);
 
       await repository.deleteProduct(id: id);
 
@@ -135,7 +142,6 @@ class ProductsNotifier extends AsyncNotifier<List<Product>> {
       state = AsyncData(updatedProducts);
     } catch (error, stackTrace) {
       state = AsyncError<List<Product>>(error, stackTrace);
-
       rethrow;
     }
   }

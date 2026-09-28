@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_practice/async_notifier_provider/crud_real_api/providers/product_providers.dart';
@@ -11,6 +12,12 @@ class ProductsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(productsProvider, (previous, next) {
+      if (kDebugMode) {
+        print('PREVIOUS: $previous');
+      }
+      if (kDebugMode) {
+        print('NEXT: $next');
+      }
       next.whenOrNull(
         data: (products) {
           ScaffoldMessenger.of(context).showSnackBar(
