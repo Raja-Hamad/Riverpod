@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_practice/async_notifier_provider/crud_real_api/views/product_view.dart';
+import 'package:riverpod_practice/select_practice/views/user_page.dart';
 void main() {
 runApp(
     const ProviderScope(
@@ -36,7 +37,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home:  ProductsPage(),
+      home:  UserPage(),
     );
   }
 }
